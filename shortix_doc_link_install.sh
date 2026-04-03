@@ -54,7 +54,7 @@ fi
 mkdir -p $HOME/Documents/ShortixDocLink
 cp /tmp/shortix/shortix_doc_link.sh $HOME/Documents/ShortixDocLink
 cp /tmp/shortix/remove_prefix.sh $HOME/Documents/ShortixDocLink
-p /tmp/shortix/shortix_doc_link_uninstall.sh $HOME/Documents/ShortixDocLink
+cp /tmp/shortix/shortix_doc_link_uninstall.sh $HOME/Documents/ShortixDocLink
 chmod +x $HOME/Documents/ShortixDocLink/shortix_doc_link.sh
 chmod +x $HOME/Documents/ShortixDocLink/remove_prefix.sh
 chmod +x $HOME/Documents/ShortixDocLink/shortix_doc_link_uninstall.sh
