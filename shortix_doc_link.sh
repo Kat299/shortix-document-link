@@ -5,14 +5,53 @@ PROTONTRICKS_FLAT="flatpak run com.github.Matoking.protontricks"
 PROTONTRICKS_FLATID="com.github.Matoking.protontricks"
 SHORTIX_DIR=$HOME/Documents/ShortixDocLink
 TEMPFILE=/tmp/shortix_temp
-COMPDATA=$HOME/.steam/steam/steamapps/compatdata
 SHADER_DIR=$HOME/.steam/steam/steamapps/shadercache
 SHADER_SHORTIX=$SHORTIX_DIR/_Shaders
 FIRSTRUN=$HOME/Documents/ShortixDocLink/.shortix
 LASTRUN=$HOME/Documents/ShortixDocLink/.shortix_last_run
 LINK_COMMAND="ln -sTf"
+LIBRARY_FILE="$HOME/.steam/steam/steamapps/libraryfolders.vdf"
+DEFAULT_COMPDATA="$HOME/.steam/steam/steamapps/compatdata"
+COMPDATA_DIRS+=("$DEFAULT_COMPDATA")
+
+
+find_prefix() {
+    local prefix_id="$1"
+    local newest=""
+    local newest_time=0
+
+    for dir in "${COMPDATA_DIRS[@]}"; do
+        candidate="$dir/$prefix_id"
+        if [ -d "$candidate" ]; then
+            mtime=$(stat -c %Y "$candidate")
+            if [ "$mtime" -gt "$newest_time" ]; then
+                newest_time=$mtime
+                newest="$candidate"
+            fi
+        fi
+    done
+
+    if [ -n "$newest" ]; then
+        echo "$newest"
+        return 0
+    else
+        echo ""
+        return 1
+    fi
+}
+
+mkdir -p "$SHORTIX_DIR"
 
 shortix_doc_link_script () {
+
+if [ -f "$LIBRARY_FILE" ]; then
+    while read -r path
+    do
+        COMPDATA_DIRS+=("$path/steamapps/compatdata")
+    done < <(grep -oP '"path"\s*"\K[^"]+' "$LIBRARY_FILE")
+fi
+
+
     #Check if and how protontricks is installed, if yes run in, if no, stop the script
     if [ "$(command -v $PROTONTRICKS_NATIVE)" ]; then
         PROTONTRICKS=$PROTONTRICKS_NATIVE
@@ -46,62 +85,34 @@ shortix_doc_link_script () {
     #Also create the _Shader directory and create symlinks to the shadercache directories.
     #Some games don't use shadercache, if so, the dead end symlink will be removed directly
     #If .size file is found add the size to the file name
-    if [ -f $SHORTIX_DIR/.id ]; then
-        if [ -f $SHORTIX_DIR/.size ]; then
-            while IFS=';' read game_name prefix_id
-            do
-                target="$SHORTIX_DIR/$game_name ($prefix_id)"
-                if [[ ! $target =~ \ -\ [0-9.]+[A-Z] ]]; then
-                    mkdir -p "$target"
-                    $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" "$target/Documents"
-                    SIZE=$(du -shH "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" | cut -f1)
-                fi
+while IFS=';' read -r game_name prefix_id
+do
+    prefix_path=$(find_prefix "$prefix_id")
+    [ -z "$prefix_path" ] && continue  # skip if prefix not found
 
-                target="$SHORTIX_DIR/$game_name ($prefix_id)"
-                if [[ ! $target =~ \ -\ [0-9.]+[A-Z] ]]; then
-                    mkdir -p "$target"
-                    $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/AppData" "$target/AppData"
-                    SIZE=$(du -shH "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/AppData" | cut -f1)
-                    mv "$target" "$target - $SIZE"
-                fi
+    target="$SHORTIX_DIR/$game_name"
+    [ -f "$SHORTIX_DIR/.id" ] && target="$SHORTIX_DIR/$game_name ($prefix_id)"
+    mkdir -p "$target"
 
-            done < $TEMPFILE
-        else
-            while IFS=';' read game_name prefix_id
-            do
-                mkdir -p "$SHORTIX_DIR/$game_name ($prefix_id)"
-                $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" "$SHORTIX_DIR/$game_name ($prefix_id)/Documents"
-                $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/AppData" "$SHORTIX_DIR/$game_name ($prefix_id)/AppData"
-            done < $TEMPFILE
-        fi
-    elif [ -f $SHORTIX_DIR/.size ]; then
-        while IFS=';' read game_name prefix_id
-        do
-            target="$SHORTIX_DIR/$game_name"
-            if [[ ! $target =~ \ -\ [0-9.]+[A-Z] ]]; then
-                mkdir -p "$target"
-                $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" "$target/Documents"
-                SIZE=$(du -shH "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" | cut -f1)
-            fi
+    steamuser="$prefix_path/pfx/drive_c/users/steamuser"
+    docs="$steamuser/Documents"
+    appdata="$steamuser/AppData"
+    mygames="$steamuser/My Games"
+    savedgames="$steamuser/Saved Games"
 
-            target="$SHORTIX_DIR/$game_name"
-            if [[ ! $target =~ \ -\ [0-9.]+[A-Z] ]]; then
-                mkdir -p "$target"
-                $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/AppData" "$target/AppData"
-                SIZE=$(du -shH "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/AppData" | cut -f1)
-                mv "$target" "$target - $SIZE"
-            fi
-        done < $TEMPFILE
+    [ -d "$docs" ] && $LINK_COMMAND "$docs" "$target/Documents"
+    [ -d "$appdata" ] && $LINK_COMMAND "$appdata" "$target/AppData"
+    [ -d "$mygames" ] && $LINK_COMMAND "$mygames" "$target/My Games"
+    [ -d "$savedgames" ] && $LINK_COMMAND "$savedgames" "$target/Saved Games"
 
-    else
-        while IFS=';' read game_name prefix_id
-        do
-            mkdir -p "$SHORTIX_DIR/$game_name"
-            $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" "$SHORTIX_DIR/$game_name/Documents"
-            $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/AppData" "$SHORTIX_DIR/$game_name/AppData"
-        done < $TEMPFILE
-
+    if [ -f "$SHORTIX_DIR/.size" ]; then
+        size_docs=$(du -shH "$docs" 2>/dev/null | cut -f1)
+        size_app=$(du -shH "$appdata" 2>/dev/null | cut -f1)
+        size_mygames=$(du -shH "$mygames" 2>/dev/null | cut -f1)
+        size_saved=$(du -shH "$savedgames" 2>/dev/null | cut -f1)
+        mv "$target" "$target - D:${size_docs}_A:${size_app}_MG:${size_mygames}_SG:${size_saved}"
     fi
+done < "$TEMPFILE"
 
     if [ -f $SHORTIX_DIR/.backup ]; then
             BACKUP_DIR=$(cat $SHORTIX_DIR/.backup)/Shortix-Backup
@@ -118,8 +129,8 @@ shortix_doc_link_script () {
 
 }
 
-if [ ! -d $COMPDATA ]; then
-    echo "Steam compatibility data directory (${COMPDATA}) could not be found! Aborting..."
+if [ ! -d "$DEFAULT_COMPDATA" ]; then
+    echo "Default Steam compatdata directory (${DEFAULT_COMPDATA}) could not be found! Aborting..."
     exit
 fi
 
@@ -127,18 +138,24 @@ if [ ! -f $FIRSTRUN ]; then
     shortix_doc_link_script
     touch "$FIRSTRUN"
 else
-    dorun=1
-    # if there is lastrun file, only run if there are compatdata folders newer than the lastrun file timestamp
-    if [ -f $LASTRUN ]; then
-        dorun=0
-        lastrun_timestamp=$(date +%s -r "$LASTRUN")
-        if [ "$(find $COMPDATA -newermt "@${lastrun_timestamp}" -type d)" ]; then
+dorun=1
+
+# If LASTRUN exists, only run if any compatdata folder is newer than LASTRUN
+if [ -f "$LASTRUN" ]; then
+    dorun=0
+    lastrun_timestamp=$(date +%s -r "$LASTRUN")
+
+    for dir in "${COMPDATA_DIRS[@]}"; do
+        if find "$dir" -type d -newermt "@${lastrun_timestamp}" | grep -q .; then
             dorun=1
+            break
         fi
-    fi
-    if [ $dorun -eq 1 ]; then
-        shortix_doc_link_script
-    fi
+    done
+fi
+
+if [ $dorun -eq 1 ]; then
+    shortix_doc_link_script
+fi
 fi
 
 
