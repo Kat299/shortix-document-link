@@ -146,18 +146,18 @@ if [ $USEKDIALOG == true ]; then
 	0)  if [ ! -d $HOME/.config/systemd/user ]; then
 	    mkdir -p $HOME/.config/systemd/user
 	    fi
-	    cp /tmp/shortix/shortix_doc_link.service $HOME/.config/systemd/user
+	    cp /tmp/shortix/shortix_doclink.service $HOME/.config/systemd/user
 	    systemctl --user daemon-reload
-	    if ! systemctl is-enabled --quiet --user shortix_doc_link.service; then
-	      systemctl --user enable shortix_doc_link.service
+	    if ! systemctl is-enabled --quiet --user shortix_doclink.service; then
+	      systemctl --user enable shortix_doclink.service
 	    fi
-	    systemctl --user restart shortix_doc_link.service
+	    systemctl --user restart shortix_doclink.service
 	    ;;
-	1)  if systemctl is-enabled --quiet --user shortix_doc_link.service; then
-	      systemctl --user disable shortix_doc_link.service
+	1)  if systemctl is-enabled --quiet --user shortix_doclink.service; then
+	      systemctl --user disable shortix_doclink.service
 	    fi
-	    if [ -f $HOME/.config/systemd/user/shortix_doc_link.service ]; then
-	      rm $HOME/.config/systemd/user/shortix_doc_link.service
+	    if [ -f $HOME/.config/systemd/user/shortix_doclink.service ]; then
+	      rm $HOME/.config/systemd/user/shortix_doclink.service
 	    fi
 	      systemctl --user daemon-reload
 	    ;;
@@ -168,18 +168,18 @@ else
 	yY)  if [ ! -d $HOME/.config/systemd/user ]; then
 	    mkdir -p $HOME/.config/systemd/user
 	    fi
-	    cp /tmp/shortix/shortix_doc_link.service $HOME/.config/systemd/user
+	    cp /tmp/shortix/shortix_doclink.service $HOME/.config/systemd/user
 	    systemctl --user daemon-reload
-	    if ! systemctl is-enabled --quiet --user shortix_doc_link.service; then
-	      systemctl --user enable shortix_doc_link.service
+	    if ! systemctl is-enabled --quiet --user shortix_doclink.service; then
+	      systemctl --user enable shortix_doclink.service
 	    fi
-	    systemctl --user restart shortix_doc_link.service
+	    systemctl --user restart shortix_doclink.service
 	    ;;
-	nN)  if systemctl is-enabled --quiet --user shortix_doc_link.service; then
-	      systemctl --user disable shortix_doc_link.service
+	nN)  if systemctl is-enabled --quiet --user shortix_doclink.service; then
+	      systemctl --user disable shortix_doclink.service
 	    fi
-	    if [ -f $HOME/.config/systemd/user/shortix_doc_link.service ]; then
-	      rm $HOME/.config/systemd/user/shortix_doc_link.service
+	    if [ -f $HOME/.config/systemd/user/shortix_doclink.service ]; then
+	      rm $HOME/.config/systemd/user/shortix_doclink.service
 	    fi
 	      systemctl --user daemon-reload
 	    ;;
