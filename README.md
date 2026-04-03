@@ -1,3 +1,9 @@
+# Shortix Document Link
+This is a fork of Shortix that just links the Documents and AppData folders of prefixes to your Documents folder.
+Enjoy!
+
+# 
+
 ![Shortix](https://raw.githubusercontent.com/Jannomag/shortix/main/shortix_logo.svg)     
 A script that creates human readable symlinks for Proton game prefixes
 

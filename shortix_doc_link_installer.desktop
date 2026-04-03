@@ -1,0 +1,8 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Name=Install Shortix Document Link
+Exec=rm -rf /tmp/shortix && git clone https://github.com/Kat299/shortix-document-link /tmp/shortix && mkdir -p $HOME/.local/share/icons && cp /tmp/shortix/shortix_icon.svg $HOME/.local/share/icons && /bin/bash /tmp/shortix/shortix_doc_link_install.sh
+Terminal=True
+Type=Application
+Icon=shortix_icon.svg
+StartupNotify=False

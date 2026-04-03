@@ -1,0 +1,12 @@
+[Unit]
+Description=Shortix Document Link is a script that creates human readable symlinks for Proton prefixes Documents and AppData folders on the Steam Deck and Linux, it will restart every 30 Minutes
+StandardOutput=console
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1800s
+ExecStart=/bin/bash %h/Documents/ShortixDocLink/shortix_doc_link.sh
+
+[Install]
+WantedBy=multi-user.target

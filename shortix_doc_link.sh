@@ -3,16 +3,16 @@
 PROTONTRICKS_NATIVE="protontricks"
 PROTONTRICKS_FLAT="flatpak run com.github.Matoking.protontricks"
 PROTONTRICKS_FLATID="com.github.Matoking.protontricks"
-SHORTIX_DIR=$HOME/Shortix
+SHORTIX_DIR=$HOME/Documents/ShortixDocLink
 TEMPFILE=/tmp/shortix_temp
 COMPDATA=$HOME/.steam/steam/steamapps/compatdata
 SHADER_DIR=$HOME/.steam/steam/steamapps/shadercache
 SHADER_SHORTIX=$SHORTIX_DIR/_Shaders
-FIRSTRUN=$HOME/Shortix/.shortix
-LASTRUN=$HOME/Shortix/.shortix_last_run
+FIRSTRUN=$HOME/Documents/ShortixDocLink/.shortix
+LASTRUN=$HOME/Documents/ShortixDocLink/.shortix_last_run
 LINK_COMMAND="ln -sTf"
 
-shortix_script () {
+shortix_doc_link_script () {
     #Check if and how protontricks is installed, if yes run in, if no, stop the script
     if [ "$(command -v $PROTONTRICKS_NATIVE)" ]; then
         PROTONTRICKS=$PROTONTRICKS_NATIVE
@@ -46,33 +46,30 @@ shortix_script () {
     #Also create the _Shader directory and create symlinks to the shadercache directories.
     #Some games don't use shadercache, if so, the dead end symlink will be removed directly
     #If .size file is found add the size to the file name
-    mkdir -p $SHADER_SHORTIX
     if [ -f $SHORTIX_DIR/.id ]; then
         if [ -f $SHORTIX_DIR/.size ]; then
             while IFS=';' read game_name prefix_id
             do
                 target="$SHORTIX_DIR/$game_name ($prefix_id)"
                 if [[ ! $target =~ \ -\ [0-9.]+[A-Z] ]]; then
-                    $LINK_COMMAND "$COMPDATA/$prefix_id" "$target"
-                    SIZE=$(du -shH "$COMPDATA/$prefix_id" | cut -f1)
+                    $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" "$target/Documents"
+                    SIZE=$(du -shH "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" | cut -f1)
                     mv "$target" "$target - $SIZE"
                 fi
 
-                target="$SHADER_SHORTIX/$game_name ($prefix_id)"
+                target="$SHORTIX_DIR/$game_name ($prefix_id)"
                 if [[ ! $target =~ \ -\ [0-9.]+[A-Z] ]]; then
-                    if [ -d $SHADER_DIR/$prefix_id ]; then
-                        $LINK_COMMAND "$SHADER_DIR/$prefix_id" "$target"
-                        SIZE=$(du -shH "$target" | cut -f1)
-                        mv "$target" "$target - $SIZE"
-                    fi
+                    $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/AppData" "$target/AppData"
+                    SIZE=$(du -shH "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/AppData" | cut -f1)
+                    mv "$target" "$target - $SIZE"
                 fi
 
             done < $TEMPFILE
         else
             while IFS=';' read game_name prefix_id
             do
-                $LINK_COMMAND "$COMPDATA/$prefix_id" "$SHORTIX_DIR/$game_name ($prefix_id)"
-                $LINK_COMMAND "$SHADER_DIR/$prefix_id" "$SHADER_SHORTIX/$game_name ($prefix_id)"
+                $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" "$SHORTIX_DIR/$game_name ($prefix_id)/Documents"
+                $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/AppData" "$SHORTIX_DIR/$game_name ($prefix_id)/AppData"
                 find -L $SHADER_SHORTIX -maxdepth 1 -type l -delete
             done < $TEMPFILE
         fi
@@ -81,26 +78,24 @@ shortix_script () {
         do
             target="$SHORTIX_DIR/$game_name"
             if [[ ! $target =~ \ -\ [0-9.]+[A-Z] ]]; then
-                $LINK_COMMAND "$COMPDATA/$prefix_id" "$target"
-                SIZE=$(du -shH "$COMPDATA/$prefix_id" | cut -f1)
+                $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" "$target/Documents"
+                SIZE=$(du -shH "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" | cut -f1)
                 mv "$target" "$target - $SIZE"
             fi
 
-            target="$SHADER_SHORTIX/$game_name"
+            target="$SHORTIX_DIR/$game_name"
             if [[ ! $target =~ \ -\ [0-9.]+[A-Z] ]]; then
-                if [ -d $SHADER_DIR/$prefix_id ]; then
-                    $LINK_COMMAND "$SHADER_DIR/$prefix_id" "$target"
-                    SIZE=$(du -shH "$target" | cut -f1)
-                    mv "$target" "$target - $SIZE"
-                fi
+                $LINK_COMMAND "/pfx/drive_c/users/steamuser/AppData" "$target/AppData"
+                SIZE=$(du -shH "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/AppData" | cut -f1)
+                mv "$target" "$target - $SIZE"
             fi
         done < $TEMPFILE
 
     else
         while IFS=';' read game_name prefix_id
         do
-            $LINK_COMMAND "$COMPDATA/$prefix_id" "$SHORTIX_DIR/$game_name"
-            $LINK_COMMAND "$SHADER_DIR/$prefix_id" "$SHADER_SHORTIX/$game_name"
+            $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" "$SHORTIX_DIR/$game_name/Documents"
+            $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/AppData" "$SHORTIX_DIR/$game_name/AppData"
             find -L $SHADER_SHORTIX -maxdepth 1 -type l -delete
         done < $TEMPFILE
 
@@ -127,7 +122,7 @@ if [ ! -d $COMPDATA ]; then
 fi
 
 if [ ! -f $FIRSTRUN ]; then
-    shortix_script
+    shortix_doc_link_script
     touch "$FIRSTRUN"
 else
     dorun=1
@@ -140,7 +135,7 @@ else
         fi
     fi
     if [ $dorun -eq 1 ]; then
-        shortix_script
+        shortix_doc_link_script
     fi
 fi
 
