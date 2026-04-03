@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #Set variables for all needed files an paths
 PROTONTRICKS_NATIVE="protontricks"
 PROTONTRICKS_FLAT="flatpak run com.github.Matoking.protontricks"
@@ -52,13 +52,14 @@ shortix_doc_link_script () {
             do
                 target="$SHORTIX_DIR/$game_name ($prefix_id)"
                 if [[ ! $target =~ \ -\ [0-9.]+[A-Z] ]]; then
+                    mkdir -p "$target"
                     $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" "$target/Documents"
                     SIZE=$(du -shH "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" | cut -f1)
-                    mv "$target" "$target - $SIZE"
                 fi
 
                 target="$SHORTIX_DIR/$game_name ($prefix_id)"
                 if [[ ! $target =~ \ -\ [0-9.]+[A-Z] ]]; then
+                    mkdir -p "$target"
                     $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/AppData" "$target/AppData"
                     SIZE=$(du -shH "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/AppData" | cut -f1)
                     mv "$target" "$target - $SIZE"
@@ -68,9 +69,9 @@ shortix_doc_link_script () {
         else
             while IFS=';' read game_name prefix_id
             do
+                mkdir -p "$SHORTIX_DIR/$game_name ($prefix_id)"
                 $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" "$SHORTIX_DIR/$game_name ($prefix_id)/Documents"
                 $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/AppData" "$SHORTIX_DIR/$game_name ($prefix_id)/AppData"
-                find -L $SHADER_SHORTIX -maxdepth 1 -type l -delete
             done < $TEMPFILE
         fi
     elif [ -f $SHORTIX_DIR/.size ]; then
@@ -78,14 +79,15 @@ shortix_doc_link_script () {
         do
             target="$SHORTIX_DIR/$game_name"
             if [[ ! $target =~ \ -\ [0-9.]+[A-Z] ]]; then
+                mkdir -p "$target"
                 $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" "$target/Documents"
                 SIZE=$(du -shH "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" | cut -f1)
-                mv "$target" "$target - $SIZE"
             fi
 
             target="$SHORTIX_DIR/$game_name"
             if [[ ! $target =~ \ -\ [0-9.]+[A-Z] ]]; then
-                $LINK_COMMAND "/pfx/drive_c/users/steamuser/AppData" "$target/AppData"
+                mkdir -p "$target"
+                $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/AppData" "$target/AppData"
                 SIZE=$(du -shH "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/AppData" | cut -f1)
                 mv "$target" "$target - $SIZE"
             fi
@@ -94,9 +96,9 @@ shortix_doc_link_script () {
     else
         while IFS=';' read game_name prefix_id
         do
+            mkdir -p "$SHORTIX_DIR/$game_name"
             $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/Documents" "$SHORTIX_DIR/$game_name/Documents"
             $LINK_COMMAND "$COMPDATA/$prefix_id/pfx/drive_c/users/steamuser/AppData" "$SHORTIX_DIR/$game_name/AppData"
-            find -L $SHADER_SHORTIX -maxdepth 1 -type l -delete
         done < $TEMPFILE
 
     fi
